@@ -23,8 +23,8 @@ namespace urc {
 
     // Calibration variables (defaults)
     let x_center = 512, y_center = 512;
-    let x_left = 1023, x_right = 0;
-    let y_top = 1023, y_bottom = 0;
+    let x_left = 1013, x_right = 10;
+    let y_top = 1013, y_bottom = 10;
 
     /**
      * Initializes the Unified Remote Controller with default settings.
@@ -52,7 +52,6 @@ namespace urc {
 
         let flashHasData = loadCalibration();
         if (!flashHasData) {
-            runManualCalibration(calibrationButton);
             if (autoUpdateFlash) saveCalibration();
         }
 
@@ -266,15 +265,27 @@ namespace urc {
     }
 
     /* 
-    *  buttons        numbers (motivated by numeric keyboard)
-    *  =======        =======
-    *    (D)           [ 8 ]
-    * (C)   (F)   [ 4 ]     [ 6 ]
-    *    (E)           [ 2 ]
-    */
+     *  buttons        numbers (motivated by numeric keyboard)
+     *  =======        =======
+     *    (D)           [ 8 ]
+     * (C)   (F)   [ 4 ]     [ 6 ]
+     *    (E)           [ 2 ]
+     */
     function setupButtonEvents() {
         // Helper function to assemble the 3-digit code and send it via radio
         function sendButtonMessage(buttonId: number, isDown: boolean) {
+            /* KEY FIX: 
+             * If Joystick:bit has not been initialized yet, 
+             * we ignore the signals from the pins caused by hardware startup. 
+             */
+            /* SUSPECTED CAUSE OF MALFUNCTION:
+             * When calling joystickbit.initJoystickBit(), 
+             * the pins are set to the correct mode(pull - up / pull - down).
+             * This state transition(voltage fluctuation on the pins) is interpreted 
+             * by the library as a button press or release, even if the user has not touched anything.
+             */
+            if (!isInitialized) return;
+            
             let modeDigit = altModeActive ? 100 : 0; // Hundreds: 100 for alt mode, 0 for standard mode
             let actionDigit = isDown ? 1 : 0;       // Units: 1 for pressed (down), 0 for released (up)
 
