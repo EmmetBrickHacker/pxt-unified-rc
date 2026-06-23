@@ -23,8 +23,8 @@ namespace urc {
 
     // Calibration variables (defaults)
     let x_center = 512, y_center = 512;
-    let x_left = 1013, x_right = 10;
-    let y_top = 1013, y_bottom = 10;
+    let x_left = 1023, x_right = 0;
+    let y_top = 1023, y_bottom = 0;
 
     /**
      * Initializes the Unified Remote Controller with default settings.
