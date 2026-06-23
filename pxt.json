@@ -5,12 +5,16 @@
     "dependencies": {
         "core": "*",
         "radio": "*",
-        "microphone": "*"
+        "microphone": "*",
+        "microbit-pxt-flashstorage": "github:bsiever/microbit-pxt-flashstorage#v0.1.4",
+        "joystickbit": "github:tinkertanker/pxt-joystickbit#v1.0.5",
+        "Value Packer": "github:brickhackers/pxt-valpacker#429fdbfc478e793eb0c927e5be563532b966f4dc"
     },
     "files": [
         "README.md",
         "main.blocks",
-        "main.ts"
+        "main.ts",
+        "urc.ts"
     ],
     "testFiles": [
         "test.ts"
