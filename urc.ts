@@ -19,7 +19,7 @@ namespace urc {
     let deactivateJoyInAlt: boolean = true; // Fixed to true as requested
     let pingInt: number = 500;
     let altToggleButton: URCButton = URCButton.AB;
-    let calibrationButton: URCButton = URCButton.B;
+    let calibrationButton: URCButton = null;
 
     // Calibration variables (defaults)
     let x_center = 512, y_center = 512;
@@ -152,15 +152,21 @@ namespace urc {
     }
 
     function waitUntilClick(btn: URCButton): void {
-        // Wait until the button is pressed
-        while (!isButtonPressed(btn)) {
-            basic.pause(20);
-        }
-        // Wait until the button is released to prevent skipping steps
+        // PROTECTION: If the user is still holding the button from the previous step/trigger,
+        // wait until they release it to prevent instantly skipping the current step.
         while (isButtonPressed(btn)) {
             basic.pause(20);
         }
-        // Haptic feedback: Short vibration to confirm the step
+
+        // Now standardly wait for a new press
+        while (!isButtonPressed(btn)) {
+            basic.pause(20);
+        }
+        // And wait for its release
+        while (isButtonPressed(btn)) {
+            basic.pause(20);
+        }
+        // Haptic feedback
         joystickbit.Vibration_Motor(100);
     }
     
@@ -259,6 +265,25 @@ namespace urc {
 
         loops.everyInterval(pingInt, function () {
             radio.sendValue("urcping", 1);
+        });
+
+        // CHECK the manual calibration task
+        // The interval is chosen so that it has no (small) common) divisors with other loops
+        loops.everyInterval(203, function () {
+            if (calibrationButton !== null && isButtonPressed(calibrationButton)) {
+                // FAILSAFE: The user must hold the button for a while (about 1 second) to prevent 
+                // calibration from being accidentally triggered during normal handling of the controller.
+                let holdCounter = 0;
+                while (isButtonPressed(calibrationButton) && holdCounter < 5) {
+                    basic.pause(200);
+                    holdCounter++;
+                }
+
+                // When the button is pressed long enough, calibration starts
+                if (holdCounter >= 5) {
+                    runManualCalibration(calibrationButton);
+                }
+            }
         });
 
         setupButtonEvents();
