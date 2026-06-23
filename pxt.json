@@ -1,11 +1,10 @@
 {
-    "name": "pxt-unified-rc",
-    "version": "0.0.0",
-    "description": "",
+    "name": "Unified Remote Control",
+    "version": "1.0.0",
+    "description": "Extension to simplify creating a remote controller using the micro:bit and ElecFreaks Joystick:bit.",
     "dependencies": {
         "core": "*",
         "radio": "*",
-        "microphone": "*",
         "microbit-pxt-flashstorage": "github:bsiever/microbit-pxt-flashstorage#v0.1.4",
         "joystickbit": "github:tinkertanker/pxt-joystickbit#v1.0.5",
         "Value Packer": "github:brickhackers/pxt-valpacker#429fdbfc478e793eb0c927e5be563532b966f4dc"
