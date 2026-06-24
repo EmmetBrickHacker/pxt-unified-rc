@@ -105,21 +105,34 @@ namespace urc {
 
     /**
      * Loads calibration values using bsiever/microbit-pxt-flashstorage.
-     * @return true if data was successfully loaded, false if no previous data exists.
+     * @return true if data was successfully loaded, false if no previous data exists or data is corrupt.
      */
     function loadCalibration(): boolean {
         let xc = flashstorage.get("urc_xc");
-        // flashstorage returns an empty string if the key does not exist
-        if (xc === "") {
+
+        // KEY FIX: Prevent null/empty read errors
+        if (!xc || xc === "") {
             return false;
         }
 
-        x_center = parseInt(xc);
-        y_center = parseInt(flashstorage.get("urc_yc"));
-        x_left = parseInt(flashstorage.get("urc_xl"));
-        x_right = parseInt(flashstorage.get("urc_xr"));
-        y_top = parseInt(flashstorage.get("urc_yt"));
-        y_bottom = parseInt(flashstorage.get("urc_yb"));
+        let p_xc = parseInt(xc);
+        let p_yc = parseInt(flashstorage.get("urc_yc"));
+        let p_xl = parseInt(flashstorage.get("urc_xl"));
+        let p_xr = parseInt(flashstorage.get("urc_xr"));
+        let p_yt = parseInt(flashstorage.get("urc_yt"));
+        let p_yb = parseInt(flashstorage.get("urc_yb"));
+
+        // KEY FIX: Prevent NaN poisoning. If any value is corrupt, abort loading.
+        if (isNaN(p_xc) || isNaN(p_yc) || isNaN(p_xl) || isNaN(p_xr) || isNaN(p_yt) || isNaN(p_yb)) {
+            return false;
+        }
+
+        x_center = p_xc;
+        y_center = p_yc;
+        x_left = p_xl;
+        x_right = p_xr;
+        y_top = p_yt;
+        y_bottom = p_yb;
 
         return true;
     }
@@ -257,8 +270,13 @@ namespace urc {
 
             in_run_calibration(urc_x, urc_y);
 
-            let mapped_x = Math.map(urc_x, x_left, x_right, -100, 100);
-            let mapped_y = Math.map(urc_y, y_bottom, y_top, -100, 100);
+            // KEY FIX: Round to integer to prevent float bits from breaking ValPacker
+            let mapped_x = Math.round(Math.map(urc_x, x_left, x_right, -100, 100));
+            let mapped_y = Math.round(Math.map(urc_y, y_bottom, y_top, -100, 100));
+
+            // Failsafe zeroing in case of math errors
+            if (isNaN(mapped_x)) mapped_x = 0;
+            if (isNaN(mapped_y)) mapped_y = 0;
 
             radio.sendValue("urccoord", ValPacker.pack(mapped_x, mapped_y));
         });
